@@ -5,11 +5,11 @@ class SignUpInput(BaseModel):
     username: str
     email: str
     password: str
-    is_staff: Optional[bool]
-    is_active: Optional[bool]
+    is_staff: Optional[bool] = None
+    is_active: Optional[bool] = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'example': {
                 "username": "myname",
                 "email": "myemail@gmail.com",
@@ -24,4 +24,10 @@ class SignUpOutput(SignUpInput):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+class LoginModel(BaseModel):
+    username:str
+    password:str
+    
