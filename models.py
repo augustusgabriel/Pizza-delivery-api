@@ -1,6 +1,6 @@
 from postgres.database import Base
-from sqlalchemy import Column, Integer, Boolean, Text, String, ForeignKey
-from sqlalchemy_utils.types import ChoiceType
+from sqlalchemy import Column, Integer, Boolean, Text, String, ForeignKey, Enum as SqlEnum
+import enum
 from sqlalchemy.orm import relationship
 
 class User(Base):
@@ -19,28 +19,34 @@ class User(Base):
 
 class Order(Base):
 
-    ORDER_STATUSES=(
-        ('PENDING', 'pending'),
-        ('IN-TRANSIT', 'in-transit'),
-        ('DELIVERED', 'delivered')
-    )
-
-    PIZZA_SIZES=(
-        ('SMALL', 'small'),
-        ('MEDIUM', 'medium'),
-        ('LARGE', 'large'),
-        ('EXTRA-LARGE', 'extra-large')
-    )
-
+    class OrderStatus(enum.Enum):
+        pending = "pending"
+        in_transit = "in_transit"
+        delivered = "delivered"
+    
+    class PizzaSizes(enum.Enum):
+        small =  "small"
+        medium = "medium"
+        large = "large"
+        extra_large = "extra-large"
+    
 
     __tablename__='orders'
     id=Column(Integer, primary_key=True)
     quantity=Column(Integer, nullable=False)
-    order_status=Column(ChoiceType(choices=ORDER_STATUSES), default="PENDING")
-    pizza_size=Column(ChoiceType(choices=PIZZA_SIZES), default="SMALL")
+    order_status=Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.pending)
+    pizza_size=Column(SqlEnum(PizzaSizes), nullable=False, default=PizzaSizes.small)
     flavour=Column(String)
     user_id=Column(Integer, ForeignKey('user.id'))
     user=relationship('User', back_populates='orders')
 
     def __repr__(self):
         return f"<Order {self.id}"
+    
+    @property
+    def pizza_size_str(self):
+        return self.pizza_size.value if self.pizza_size else None
+
+    @property
+    def order_status_str(self):
+        return self.order_status.value if self.order_status else None
